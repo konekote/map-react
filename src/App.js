@@ -11,11 +11,11 @@ export class App extends Component {
     activeMarker: null, //Shows the active marker upon click
     selectedPlace: {}, //Shows the infoWindow to the selected place upon a marker
     markers: [
-      { id: 1, name: 'The National Museum of Romanian History', position: { lat: 44.4314472, lng: 26.097429 }, location:"", shortUrl:"" },
-      { id: 2,name: 'The National Museum of Art of Romania', position: { lat: 44.4393759, lng: 26.0957858 }, location:"", shortUrl:"" },
-      { id: 3,name: 'Palace of Parliament', position: { lat: 44.428331, lng: 26.087627 }, location:"", shortUrl:"" },
-      { id: 4,name: 'Politechnica Park', position: { lat: 44.4386853, lng: 26.0493431 }, location:"", shortUrl:"" },
-      { id: 5,name: 'The Fire Tower', position: { lat: 44.4402447, lng: 26.1206101 }, location:"", shortUrl:"" }
+      { id: 1, name: 'The National Museum of Romanian History', position: { lat: 44.4314472, lng: 26.097429 }, location: "", shortUrl: "" },
+      { id: 2, name: 'The National Museum of Art of Romania', position: { lat: 44.4393759, lng: 26.0957858 }, location: "", shortUrl: "" },
+      { id: 3, name: 'Palace of Parliament', position: { lat: 44.428331, lng: 26.087627 }, location: "", shortUrl: "" },
+      { id: 4, name: 'Politechnica Park', position: { lat: 44.4386853, lng: 26.0493431 }, location: "", shortUrl: "" },
+      { id: 5, name: 'The Fire Tower', position: { lat: 44.4402447, lng: 26.1206101 }, location: "", shortUrl: "" }
     ],
     results: [],
     query: ''
@@ -26,10 +26,10 @@ export class App extends Component {
     const param = {
       venue_id: id,
     }
-    foursquareAPI.getVenue(param, function(error, venue) {
+    foursquareAPI.getVenue(param, function (error, venue) {
       if (!error) {
-          markers[index].location = venue.response.venue.location.formattedAddress.join(', ');
-          markers[index].shortUrl = venue.response.venue.shortUrl;
+        markers[index].location = venue.response.venue.location.formattedAddress.join(', ');
+        markers[index].shortUrl = venue.response.venue.shortUrl;
       }
     });
   }
@@ -43,7 +43,7 @@ export class App extends Component {
     };
     const callback = this.getVenueDetails;
     const markers = this.state.markers;
-    foursquareAPI.getVenues(param, function(error, venues) {
+    foursquareAPI.getVenues(param, function (error, venues) {
       if (!error) {
         callback(venues.response.venues[0].id, index, markers);
       }
@@ -74,7 +74,7 @@ export class App extends Component {
   };
 
   //Render markers for results array if not empty. If empty, render markers for marker array
-  renderMarkers = () => {  
+  renderMarkers = () => {
     if (this.state.results.length) {
       return this.state.results.map(result =>
         <Marker ref={result.id} key={result.name}
@@ -84,12 +84,12 @@ export class App extends Component {
         />
       );
     } else {
-        return this.state.markers.map(marker =>
-          <Marker ref={marker.id} key={marker.name}
-            onClick={this.onMarkerClick}
-            name={marker.name}
-            position={marker.position}
-          />
+      return this.state.markers.map(marker =>
+        <Marker ref={marker.id} key={marker.name}
+          onClick={this.onMarkerClick}
+          name={marker.name}
+          position={marker.position}
+        />
       );
     }
   }
@@ -97,23 +97,23 @@ export class App extends Component {
   //Activate marker by clicking on list item button and add animation to marker
   activateMarker = (markerProperties) => {
     const markerToActivate = this.refs[markerProperties.id];
-    const animation = window.google ? window.google.maps.Animation.BOUNCE:null;
+    const animation = window.google ? window.google.maps.Animation.BOUNCE : null;
     markerToActivate.marker.setAnimation(animation);
-    
-    if(this.state.activeMarker) {
+
+    if (this.state.activeMarker) {
       this.state.activeMarker.setAnimation(null);
     }
     this.setState({
       showingInfoWindow: true,
       activeMarker: markerToActivate.marker,
-      selectedPlace: {...markerProperties}
+      selectedPlace: { ...markerProperties }
     });
   }
 
   clearQuery = () => {
     this.setState({ results: [] })
     this.setState({ query: '' })
-}
+  }
 
   updateQuery = (query) => {
     this.setState({ query })
@@ -133,7 +133,7 @@ export class App extends Component {
 
   renderListButtons = (array) => {
     return array.map((marker) => (
-      <li key={marker.id}><button onClick={()=>this.activateMarker(marker)}>{marker.name}</button></li>
+      <li key={marker.id}><button onClick={() => this.activateMarker(marker)}>{marker.name}</button></li>
     ));
   }
 
@@ -144,7 +144,7 @@ export class App extends Component {
       return this.renderListButtons(this.state.markers);
     }
   }
-  
+
 
   render() {
     const renderedMarkers = this.renderMarkers();
@@ -152,16 +152,16 @@ export class App extends Component {
       <div className="App">
         <div className="container">
           <div className="search">
-            <input 
-              type="text" 
-              name="search" 
+            <input
+              type="text"
+              name="search"
               placeholder="Find attraction"
-              value={this.state.query}   
-              onChange={(event) => this.updateQuery(event.target.value)}           
+              value={this.state.query}
+              onChange={(event) => this.updateQuery(event.target.value)}
             />
-            <input 
-              type="submit" 
-              value="Search" 
+            <input
+              type="submit"
+              value="Search"
               onClick={(event) => this.updateQueryResults(event)}
             />
             <button onClick={this.clearQuery}>Show all</button>
