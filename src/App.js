@@ -3,22 +3,54 @@ import logo from './logo.svg';
 import './App.css';
 import { Map, GoogleApiWrapper, Marker, InfoWindow } from 'google-maps-react'
 import escapeRegExp from 'escape-string-regexp'
+import foursquareAPI from './FoursquareAPI'
 
 export class App extends Component {
   state = {
     showingInfoWindow: false, //Hides or the shows the infoWindow
-    activeMarker: {}, //Shows the active marker upon click
+    activeMarker: null, //Shows the active marker upon click
     selectedPlace: {}, //Shows the infoWindow to the selected place upon a marker
     markers: [
-      { id: 1, name: 'The National Museum of Romanian History', position: { lat: 44.4314472, lng: 26.097429 } },
-      { id: 2,name: 'The National Museum of Art of Romania', position: { lat: 44.4393759, lng: 26.0957858 } },
-      { id: 3,name: 'Palace of Parliament', position: { lat: 44.4275154, lng: 26.0872672 } },
-      { id: 4,name: 'AFI Cotroceni Shopping Mall', position: { lat: 44.4306195, lng: 26.0521446 } },
-      { id: 5,name: 'The Fire Tower', position: { lat: 44.4402447, lng: 26.1206101 } }
+      { id: 1, name: 'The National Museum of Romanian History', position: { lat: 44.4314472, lng: 26.097429 }, location:"", shortUrl:"" },
+      { id: 2,name: 'The National Museum of Art of Romania', position: { lat: 44.4393759, lng: 26.0957858 }, location:"", shortUrl:"" },
+      { id: 3,name: 'Palace of Parliament', position: { lat: 44.428331, lng: 26.087627 }, location:"", shortUrl:"" },
+      { id: 4,name: 'Politechnica Park', position: { lat: 44.4386853, lng: 26.0493431 }, location:"", shortUrl:"" },
+      { id: 5,name: 'The Fire Tower', position: { lat: 44.4402447, lng: 26.1206101 }, location:"", shortUrl:"" }
     ],
     results: [],
     query: ''
   }
+
+  getVenueDetails(id, index, markers) {
+    const param = {
+      venue_id: id,
+    }
+    foursquareAPI.getVenue(param, function(error, venue) {
+      if (!error) {
+          markers[index].location = venue.response.venue.location.formattedAddress.join(', ');
+          markers[index].shortUrl = venue.response.venue.shortUrl;
+      }
+    });
+  }
+
+  getVenues(marker, index) {
+    const param = {
+      'll': `${marker.position.lat},${marker.position.lng}`,
+      'limit': 1,
+      'radius': 1,
+    };
+    const callback = this.getVenueDetails;
+    const markers = this.state.markers;
+    foursquareAPI.getVenues(param, function(error, venues) {
+      if (!error) {
+        callback(venues.response.venues[0].id, index, markers);
+      }
+    });
+  }
+
+  componentDidMount() {
+    this.state.markers.map((marker, index) => this.getVenues(marker, index));
+  };
 
 
   onMarkerClick = (props, marker) => this.setState({
@@ -61,10 +93,14 @@ export class App extends Component {
     const markerToActivate = this.refs[markerProperties.id];
     const animation = window.google ? window.google.maps.Animation.BOUNCE:null;
     markerToActivate.marker.setAnimation(animation);
+    
+    if(this.state.activeMarker) {
+      this.state.activeMarker.setAnimation(null);
+    }
     this.setState({
       showingInfoWindow: true,
       activeMarker: markerToActivate.marker,
-      selectedPlace: {name:markerProperties.name}
+      selectedPlace: {...markerProperties}
     });
   }
 
@@ -147,6 +183,8 @@ export class App extends Component {
               >
                 <div>
                   <h3>{this.state.selectedPlace.name}</h3>
+                  <p>{this.state.selectedPlace.location}</p>
+                  <p>{this.state.selectedPlace.shortUrl}</p>
                 </div>
               </InfoWindow>
             </Map>
