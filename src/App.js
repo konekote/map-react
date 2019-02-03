@@ -7,7 +7,7 @@ import foursquareAPI from './FoursquareAPI'
 
 export class App extends Component {
   state = {
-    showingInfoWindow: false, //Hides or the shows the infoWindow
+    showingInfoWindow: false, //Hides or shows the infoWindow
     activeMarker: null, //Shows the active marker upon click
     selectedPlace: {}, //Shows the infoWindow to the selected place upon a marker
     markers: [
@@ -21,6 +21,7 @@ export class App extends Component {
     query: ''
   }
 
+  //Get the necessary venue information from Foursquare for location and the short URL and update markers information in markers array
   getVenueDetails(id, index, markers) {
     const param = {
       venue_id: id,
@@ -33,11 +34,12 @@ export class App extends Component {
     });
   }
 
+  //Get all information about venues from Foursquare using lat and lng from markers array
   getVenues(marker, index) {
     const param = {
       'll': `${marker.position.lat},${marker.position.lng}`,
-      'limit': 1,
-      'radius': 1,
+      'limit': 1, //limit result to 1
+      'radius': 1, //get the most specific results by limiting the radius
     };
     const callback = this.getVenueDetails;
     const markers = this.state.markers;
@@ -48,17 +50,19 @@ export class App extends Component {
     });
   }
 
+  //Use callbacks declared above to get information from Foursquare
   componentDidMount() {
     this.state.markers.map((marker, index) => this.getVenues(marker, index));
   };
 
-
+  //Make maerker active marker on click and show info window
   onMarkerClick = (props, marker) => this.setState({
     showingInfoWindow: true,
     activeMarker: marker,
     selectedPlace: props
   });
 
+  //Close info window and clear animation and active marker
   onClose = props => {
     if (this.state.showingInfoWindow) {
       this.state.activeMarker.setAnimation(null);
@@ -69,6 +73,7 @@ export class App extends Component {
     }
   };
 
+  //Render markers for results array if not empty. If empty, render markers for marker array
   renderMarkers = () => {  
     if (this.state.results.length) {
       return this.state.results.map(result =>
@@ -89,6 +94,7 @@ export class App extends Component {
     }
   }
 
+  //Activate marker by clicking on list item button and add animation to marker
   activateMarker = (markerProperties) => {
     const markerToActivate = this.refs[markerProperties.id];
     const animation = window.google ? window.google.maps.Animation.BOUNCE:null;
