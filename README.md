@@ -1,10 +1,10 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-##Start project
+##Start project##
 To start the project, in the project directory, you can run:
 **`npm start`**
 
-#Resources
+#Resources#
 - w3schools CSS Forms: https://www.w3schools.com/css/css_form.asp
 - Scotch React Apps with the Google Maps API and google-maps-react: https://scotch.io/tutorials/react-apps-with-the-google-maps-api-and-google-maps-react
 - Google Maps React Component: https://github.com/fullstackreact/google-maps-react
