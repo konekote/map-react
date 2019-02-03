@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { Map, GoogleApiWrapper, Marker, InfoWindow } from 'google-maps-react'
+import escapeRegExp from 'escape-string-regexp'
 
 export class App extends Component {
   state = {
@@ -15,11 +16,12 @@ export class App extends Component {
       { id: 4,name: 'AFI Cotroceni Shopping Mall', position: { lat: 44.4306195, lng: 26.0521446 } },
       { id: 5,name: 'The Fire Tower', position: { lat: 44.4402447, lng: 26.1206101 } }
     ],
+    results: [],
     query: ''
   }
 
 
-  onMarkerClick = (props, marker, e) => this.setState({
+  onMarkerClick = (props, marker) => this.setState({
     showingInfoWindow: true,
     activeMarker: marker,
     selectedPlace: props
@@ -27,6 +29,7 @@ export class App extends Component {
 
   onClose = props => {
     if (this.state.showingInfoWindow) {
+      this.state.activeMarker.setAnimation(null);
       this.setState({
         activeMarker: null,
         showingInfoWindow: false
@@ -34,30 +37,94 @@ export class App extends Component {
     }
   };
 
-  renderMarkers = () => {
-    if (!this.state.query.length) {
-      return this.state.markers.map(marker =>
-        <Marker key={marker.name}
+  renderMarkers = () => {  
+    if (this.state.results.length) {
+      return this.state.results.map(result =>
+        <Marker ref={result.id} key={result.name}
           onClick={this.onMarkerClick}
-          name={marker.name}
-          position={marker.position}
+          name={result.name}
+          position={result.position}
         />
+      );
+    } else {
+        return this.state.markers.map(marker =>
+          <Marker ref={marker.id} key={marker.name}
+            onClick={this.onMarkerClick}
+            name={marker.name}
+            position={marker.position}
+          />
       );
     }
   }
 
-  render() {
+  activateMarker = (markerProperties) => {
+    const markerToActivate = this.refs[markerProperties.id];
+    const animation = window.google ? window.google.maps.Animation.BOUNCE:null;
+    markerToActivate.marker.setAnimation(animation);
+    this.setState({
+      showingInfoWindow: true,
+      activeMarker: markerToActivate.marker,
+      selectedPlace: {name:markerProperties.name}
+    });
+  }
 
+  clearQuery = () => {
+    this.setState({ results: [] })
+    this.setState({ query: '' })
+}
+
+  updateQuery = (query) => {
+    this.setState({ query })
+  }
+
+  updateQueryResults = () => {
+    if (this.state.query.length) {
+      this.setState({ results: [] })
+      const query = this.state.query;
+      const match = new RegExp(escapeRegExp(query), 'i')
+      this.setState({ results: this.state.markers.filter((marker) => match.test(marker.name)) });
+      this.renderMarkers();
+    } else {
+      this.setState({ results: [] })
+    }
+  }
+
+  renderListButtons = (array) => {
+    return array.map((marker) => (
+      <li key={marker.id}><button onClick={()=>this.activateMarker(marker)}>{marker.name}</button></li>
+    ));
+  }
+
+  renderList = () => {
+    if (this.state.results.length) {
+      return this.renderListButtons(this.state.results);
+    } else {
+      return this.renderListButtons(this.state.markers);
+    }
+  }
+  
+
+  render() {
+    const renderedMarkers = this.renderMarkers();
     return (
       <div className="App">
         <div className="container">
           <div className="search">
-            <input type="text" name="search" placeholder="Find attraction"/>
-            <input type="submit" value="Search" />
+            <input 
+              type="text" 
+              name="search" 
+              placeholder="Find attraction"
+              value={this.state.query}   
+              onChange={(event) => this.updateQuery(event.target.value)}           
+            />
+            <input 
+              type="submit" 
+              value="Search" 
+              onClick={(event) => this.updateQueryResults(event)}
+            />
+            <button onClick={this.clearQuery}>Show all</button>
             <ul>
-              {this.state.markers.map(marker => (
-                <li key={marker.id}>{marker.name}</li>
-              ))}
+              {this.renderList()}
             </ul>
           </div>
           <div className="MapContainer">
@@ -71,7 +138,7 @@ export class App extends Component {
                 lng: 26.097429
               }}
             >
-              {this.renderMarkers()}
+              {renderedMarkers}
 
               <InfoWindow
                 marker={this.state.activeMarker}
