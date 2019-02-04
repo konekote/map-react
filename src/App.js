@@ -30,7 +30,7 @@ export class App extends Component {
       if (!error) {
         markers[index].location = venue.response.venue.location.formattedAddress.join(', ');
         markers[index].shortUrl = venue.response.venue.shortUrl;
-      }
+      } else {alert("Oops, an error has occured retrieving venue details.")}
     });
   }
 
@@ -46,13 +46,16 @@ export class App extends Component {
     foursquareAPI.getVenues(param, function (error, venues) {
       if (!error) {
         callback(venues.response.venues[0].id, index, markers);
-      }
+      } else {alert("Oops, an error has occured retrieving venues.")}
     });
   }
 
   //Use callbacks declared above to get information from Foursquare
   componentDidMount() {
     this.state.markers.map((marker, index) => this.getVenues(marker, index));
+    window.gm_authFailure = () => {
+      alert("Error loading Google Maps, Check The API Key!");
+    };
   };
 
   //Make maerker active marker on click and show info window
@@ -133,7 +136,7 @@ export class App extends Component {
 
   renderListButtons = (array) => {
     return array.map((marker) => (
-      <li key={marker.id}><button onClick={() => this.activateMarker(marker)}>{marker.name}</button></li>
+      <li role="listitem" key={marker.id}><button onClick={() => this.activateMarker(marker)}>{marker.name}</button></li>
     ));
   }
 
